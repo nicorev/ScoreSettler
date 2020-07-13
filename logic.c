@@ -1,57 +1,152 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include<string.h>
+#include <math.h>
 
-int odds;
-int times;
-int wins = 0;
-char over_under;
+typedef struct Opt
+{
+    //dynamically allocated name
+    char *name;
+    double odds;
+}opt;
 
-int main ()
+typedef struct Node
 {
- srand( (unsigned) clock());
- printf("Welcome to ScoreSetller\n");
- printf("====================================================================\n");
- printf("odds:");
- scanf(" %d", &odds);
- do
- {
-    printf("over or under (o/u): ");
-    scanf(" %c", &over_under);
- } while (over_under != 'o' && over_under != 'u');
- char check = 'n';
- do
+    struct Node *next;
+    struct Node *prev;
+    struct Opt *data;
+}node;
+
+ struct 
 {
-    printf("How many times would you like to flip the coin\n");
-    scanf(" %d", &times);
-    if(times % 2 == 0)
+    //is a linked list
+    struct Node *head;
+    int evenOdds;
+    int remainingOdds; 
+    int opts ; 
+} wheel;
+
+void setEvenOdds()
+{
+    double odds = 100 / wheel.opts;
+    struct Node *cur = wheel.head;
+    while (cur =! NULL)
     {
-        printf("Are you sure you want to flip the coin an even number of times (y/n): ");
-        scanf(" %c", &check);
-    }
+        cur->data->odds = odds;
+    }   
+}
+
+void add(char name[100], double odds)
+{
+    wheel.opts++;
+    struct Node *cur = wheel.head;
+    struct Node *prev;
+    if (cur != NULL)
+    {
+        printf("here");
+        while (cur->next != NULL)
+        {
+            cur = cur->next;
+        }
+        prev = cur;
+        cur->next = malloc(sizeof(node));
+        cur = cur->next;
+        cur->prev = prev;
+    }   
     else 
-        check = 'y';
-} while(check != 'y');
-int i;
-if(over_under == 'o')
-{  
-    for(i = 0; i < times; i++)
-    {
-                int num = rand() % 100;
-        printf("%d\n", num);
-        if(num >= odds)
-        wins++;
-    }
+        cur = malloc(sizeof(node));
+
+    cur->data = malloc(sizeof(opt));
+    cur->data->name = malloc(strlen(name)*sizeof(char));
+    if (wheel.evenOdds)
+        setEvenOdds();
+    else 
+        {
+            cur->data->odds = odds;
+            wheel.remainingOdds -= odds;
+        }   
 }
-else
-{  
-    for(i = 0; i < times; i++)
+
+struct Opt * roll()
+{
+    double winNum = (rand() % 100);
+    struct Node *cur = wheel.head;
+    double sum = 0.0;
+    while(cur != NULL)
     {
-        int num = rand() % 100;
-        printf("%d\n", num);
-        if(num < odds)
-        wins++;
+        if (winNum >= sum && winNum < (sum + cur->data->odds))
+            return cur->data;
+        else
+            cur = cur->next;
     }
+    return NULL;
 }
-printf("You won %d out of %d flips!\n", wins, times);
+
+int main()
+{
+    srand( (unsigned) clock());
+    wheel.opts = 0;
+    char even;
+    char name[100];
+    double odds;
+    char more;
+
+    printf("Welcome to ScroreSettler!\n");
+
+    printf("Would you like to use even odds (y/n)\n");
+    do 
+    {
+        scanf("%c", &even);
+        if (even == 'y')
+        {
+            wheel.evenOdds = 1;
+            wheel.remainingOdds = 0;
+        }
+        else if (even == 'n')
+        {
+            wheel.evenOdds = 0;
+            wheel.remainingOdds = 100;
+        }
+        else
+            printf("Invalid input\n");
+    } while ( even != 'y' && even != 'n');
+
+    printf("Please enter the first option\n");
+    do
+    {
+        printf("name: \n");
+        scanf("%s", name);
+        if (wheel.evenOdds)
+            add(name, 0.0);
+        else
+        {
+            int valid = 1;
+            printf("odds: \n");
+            do
+            {
+                scanf("%f", &odds);
+                if (odds > wheel.remainingOdds || odds <= 0)
+                {
+                    printf("Invalid odds");
+                    valid = 0;
+                }
+            }while (!valid);
+            add(name,odds);
+        }
+        printf("Would you like to add more options (y/n)\n");
+        do 
+        {
+            scanf("%c", &more);
+            if (more != 'y' && more != 'n')
+                printf("Invalid option\n");
+        } while (more != 'n' && more != 'y');      
+    } while (more != 'n');
+    
+    printf("Rolling...\n");
+    struct Opt *winner = roll();
+    if (winner == NULL)
+        printf("No Winner!");
+    else
+        printf("%s was won with a chance of %f %%!", winner->name, winner->odds);
 }
