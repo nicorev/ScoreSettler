@@ -97,7 +97,7 @@ int main()
     printf("Would you like to use even odds (y/n)\n");
     do 
     {
-        scanf("%c", &even);
+        scanf(" %c", &even);
         if (even == 'y')
         {
             wheel.evenOdds = 1;
@@ -115,17 +115,17 @@ int main()
     printf("Please enter the first option\n");
     do
     {
-        printf("name: \n");
-        scanf("%s", name);
+        printf("name: ");
+        scanf(" %s", &name);
         if (wheel.evenOdds)
             add(name, 0.0);
         else
         {
             int valid = 1;
-            printf("odds: \n");
+            printf("odds: ");
             do
             {
-                scanf("%f", &odds);
+                scanf(" %f", &odds);
                 if (odds > wheel.remainingOdds || odds <= 0)
                 {
                     printf("Invalid odds");
@@ -137,16 +137,18 @@ int main()
         printf("Would you like to add more options (y/n)\n");
         do 
         {
-            scanf("%c", &more);
+            scanf(" %c", &more);
             if (more != 'y' && more != 'n')
+            {
                 printf("Invalid option\n");
+            }
         } while (more != 'n' && more != 'y');      
-    } while (more != 'n');
+    } while (more == 'y');
     
     printf("Rolling...\n");
     struct Opt *winner = roll();
     if (winner == NULL)
-        printf("No Winner!");
+        printf("No Winner!\n");
     else
         printf("%s was won with a chance of %f %%!", winner->name, winner->odds);
 }
