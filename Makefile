@@ -2,7 +2,8 @@ CC = gcc
 
 all: server.x logic.x client.x
 
-clean: rm -f *.o *.x
+clean: 
+	rm -f *.o *.x
 
 server.x:
 	$(CC) server.c -o server.x
