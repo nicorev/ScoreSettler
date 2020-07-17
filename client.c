@@ -11,21 +11,25 @@
 int main(int argc, char **argv) {
 	pid_t serv_pid;
 	int pipe_fd[2];
-	char serv_ip[21];
+	char serv_ip[22];
 	char test[100];
 	int port_i;
 	in_port_t serv_port;
 	int sock;
 	ssize_t bytes;
+	char buffer[BUFSIZ];
 	if (argc == 1) {
 		puts("ERROR: Must inlcude option -c for just client or -s for client and server");
+		exit(0);
 	}
 	else if (argc == 2) {
 		if(strcmp(argv[1], "-c")==0) {
 			printf("Please input IPv4 \n");
-			scanf("%s", &serv_ip);
+			fgets(serv_ip, BUFSIZ * sizeof(char), stdin);
+			serv_ip[strlen(serv_ip) - 1] = '\0';
 			printf("Please input Port \n");
-			scanf("%d", &port_i);
+			fgets(buffer, BUFSIZ, stdin);
+			port_i = atoi(buffer);
 			serv_port = port_i;
 		}
 		else if (strcmp(argv[1], "-s")==0) {
@@ -45,9 +49,9 @@ int main(int argc, char **argv) {
 			dup2(pipe_fd[0], STDIN_FILENO);
 			close(pipe_fd[1]);
 			fflush(STDIN_FILENO);
-			scanf("%s", &serv_ip);
+			scanf("%s\n", &serv_ip);
 			printf("The ip is  %s \n", serv_ip);
-			scanf("%d", &port_i);
+			scanf("%d\n", &port_i);
 			printf("The port is %d \n", port_i);
 			serv_port = port_i;
 			dup2(temp, 0);
@@ -58,28 +62,39 @@ int main(int argc, char **argv) {
 		puts("too many arguments");
 	}
 	char message[64];
-	puts("what is the password?");
-	scanf("%s", &message);
+	puts("Enter Message");
+	fgets(message, 64, stdin);
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sock < 0) {
-		puts ("socket creation failed");
+		puts("Error Creating Socket");
 		exit(0);
 	}
-	
 	struct sockaddr_in server_address;
 	memset(&server_address, 0, sizeof(server_address));
 	server_address.sin_family = AF_INET;
-	inet_pton(AF_INET, serv_ip, &server_address.sin_addr.s_addr);
+	int inet_return = inet_pton(AF_INET, serv_ip, &server_address.sin_addr.s_addr);
+        if(inet_return == 0) {
+		puts("Error with ip address format");
+		puts(serv_ip);
+		exit(0);
+	}
+	if (inet_return < 0) {
+		puts("Error with inet_pton");
+		exit(0);
+	}
 	server_address.sin_port = htons(serv_port);
-	connect(sock, (struct sockaddr *) &server_address, sizeof(server_address));
+	if (connect(sock, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
+		puts("failed connection to server");
+	}
 	send(sock, message, sizeof(message), 0);
-	char buffer[BUFSIZ];
 	while(recv(sock, buffer, BUFSIZ - 1, 0) != 0) {
 			puts(buffer);
+			printf("$");
+			fgets(buffer, BUFSIZ, stdin);
+			send(sock, buffer, sizeof(buffer), 0);
 		}
 	puts("all data recieved");
 	close(sock);
-	
 	return 0;
 }
 
