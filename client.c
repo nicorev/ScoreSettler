@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 			dup2(pipe_fd[0], STDIN_FILENO);
 			close(pipe_fd[1]);
 			fflush(STDIN_FILENO);
-			scanf("%s\n", &serv_ip);
+			scanf("%s\n", serv_ip);
 			printf("The ip is  %s \n", serv_ip);
 			scanf("%d\n", &port_i);
 			printf("The port is %d \n", port_i);
