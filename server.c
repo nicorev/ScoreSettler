@@ -69,8 +69,8 @@ void print_list (struct Token *token_list) {
 }
 int main(int argc, char **argv) {
 	in_port_t port = 13043;
-	puts("10.0.0.34");
-	puts("13043");
+	puts("Use localhost 127.0.0.1");
+	puts("Port: 13043");
 	int bytes_read;
 	int server_sock;
 	if((server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
